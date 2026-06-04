@@ -78,7 +78,7 @@ function handleExport() {
     const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    const dateStr = new Date().toISOString().slice(0, 10)
+    const dateStr = new Date().toLocaleDateString('en-CA')
     a.href = url
     a.download = `todo-backup-${dateStr}.json`
     document.body.appendChild(a)
@@ -115,6 +115,11 @@ async function handleFileSelected(event) {
       jsonData = JSON.parse(text)
     } catch {
       ElMessage.error('文件格式错误，请选择 .json 文件')
+      return
+    }
+
+    if (!jsonData || typeof jsonData !== 'object' || Array.isArray(jsonData)) {
+      ElMessage.error('文件格式错误，请选择有效的备份文件')
       return
     }
 

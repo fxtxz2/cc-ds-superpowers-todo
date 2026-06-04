@@ -116,7 +116,7 @@ export function useTodoStore() {
   }
 
   function importData(jsonData) {
-    if (!jsonData || typeof jsonData !== 'object') {
+    if (!jsonData || typeof jsonData !== 'object' || Array.isArray(jsonData)) {
       throw new Error('无效的数据格式')
     }
     const newItems = Array.isArray(jsonData.items) ? jsonData.items : []

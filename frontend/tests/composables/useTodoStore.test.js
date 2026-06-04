@@ -262,6 +262,12 @@ describe('useTodoStore', () => {
       expect(() => store.importData('not an object')).toThrow('无效的数据格式')
     })
 
+    it('传入数组时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData([])).toThrow('无效的数据格式')
+    })
+
     it('导入的数据是独立副本，外部修改不影响 store', () => {
       const store = useTodoStore()
       const externalItems = [{ id: 'a1', text: '外部任务', status: 'todo', createdAt: 1000 }]
