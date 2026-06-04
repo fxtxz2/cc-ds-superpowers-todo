@@ -261,5 +261,19 @@ describe('useTodoStore', () => {
 
       expect(() => store.importData('not an object')).toThrow('无效的数据格式')
     })
+
+    it('导入的数据是独立副本，外部修改不影响 store', () => {
+      const store = useTodoStore()
+      const externalItems = [{ id: 'a1', text: '外部任务', status: 'todo', createdAt: 1000 }]
+      store.importData({ version: 1, exportedAt: '', items: externalItems, archivedItems: [] })
+
+      // 修改外部引用
+      externalItems[0].text = '被篡改'
+      externalItems.push({ id: 'a2', text: '注入', status: 'todo', createdAt: 2000 })
+
+      // store 不受影响
+      expect(store.items.value).toHaveLength(1)
+      expect(store.items.value[0].text).toBe('外部任务')
+    })
   })
 })

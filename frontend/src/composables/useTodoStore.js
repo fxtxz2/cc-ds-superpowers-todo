@@ -121,8 +121,8 @@ export function useTodoStore() {
     }
     const newItems = Array.isArray(jsonData.items) ? jsonData.items : []
     const newArchived = Array.isArray(jsonData.archivedItems) ? jsonData.archivedItems : []
-    items.value = newItems
-    archivedItems.value = newArchived
+    items.value = newItems.map((item) => ({ ...item }))
+    archivedItems.value = newArchived.map((item) => ({ ...item }))
   }
 
   return {
