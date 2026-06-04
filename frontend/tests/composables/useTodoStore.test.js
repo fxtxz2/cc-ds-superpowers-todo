@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useTodoStore } from '../../src/composables/useTodoStore'
+import { STATUSES, useTodoStore } from '../../src/composables/useTodoStore'
 
 describe('useTodoStore', () => {
   beforeEach(() => {
@@ -96,5 +96,35 @@ describe('useTodoStore', () => {
     expect(store.items.value).toHaveLength(1)
 
     localStorage.setItem = originalSetItem
+  })
+
+  it('removeTodo 传入不存在的 id 不影响数组', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.removeTodo('nonexistent-id')
+    expect(store.items.value).toHaveLength(1)
+  })
+
+  it('updateStatus 传入不存在的 id 不改变数组', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.updateStatus('nonexistent-id', 'done')
+    expect(store.items.value[0].status).toBe('todo')
+  })
+
+  it('updateStatus 传入无效 status 不改变状态', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.updateStatus(store.items.value[0].id, 'invalid-status')
+    expect(store.items.value[0].status).toBe('todo')
+  })
+
+  it('archiveDone 没有 done 项时不做任何操作', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.addTodo('任务2')
+    store.archiveDone()
+    expect(store.items.value).toHaveLength(2)
+    expect(store.archivedItems.value).toHaveLength(0)
   })
 })

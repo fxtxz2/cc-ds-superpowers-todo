@@ -1,7 +1,17 @@
 import { ref, watch } from 'vue'
 
+export const STATUSES = { TODO: 'todo', IN_PROGRESS: 'in-progress', DONE: 'done' }
+
 const STORAGE_KEY = 'todo-items'
 const ARCHIVE_KEY = 'todo-archived'
+
+function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback: timestamp + random string
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
 
 function loadFromStorage(key) {
   try {
@@ -15,8 +25,8 @@ function loadFromStorage(key) {
 function saveToStorage(key, data) {
   try {
     localStorage.setItem(key, JSON.stringify(data))
-  } catch {
-    // 静默失败，数据保持在内存中
+  } catch (e) {
+    console.warn('[useTodoStore] Failed to save to localStorage:', e.message)
   }
 }
 
@@ -42,9 +52,9 @@ export function useTodoStore() {
     const trimmed = text.trim()
     if (!trimmed) return
     items.value.push({
-      id: crypto.randomUUID(),
+      id: generateId(),
       text: trimmed,
-      status: 'todo',
+      status: STATUSES.TODO,
       createdAt: Date.now(),
     })
   }
@@ -54,6 +64,7 @@ export function useTodoStore() {
   }
 
   function updateStatus(id, newStatus) {
+    if (!Object.values(STATUSES).includes(newStatus)) return
     const item = items.value.find((item) => item.id === id)
     if (item) {
       item.status = newStatus
@@ -65,13 +76,12 @@ export function useTodoStore() {
   }
 
   function archiveDone() {
-    const doneItems = items.value.filter((item) => item.status === 'done')
-    const now = Date.now()
-    doneItems.forEach((item) => {
-      item.archivedAt = now
-    })
+    const doneItems = items.value
+      .filter((item) => item.status === STATUSES.DONE)
+      .map((item) => ({ ...item, archivedAt: Date.now() }))
+    if (doneItems.length === 0) return
     archivedItems.value = [...doneItems, ...archivedItems.value]
-    items.value = items.value.filter((item) => item.status !== 'done')
+    items.value = items.value.filter((item) => item.status !== STATUSES.DONE)
   }
 
   return {
