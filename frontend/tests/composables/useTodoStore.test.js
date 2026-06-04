@@ -188,5 +188,18 @@ describe('useTodoStore', () => {
       expect(data.items).toEqual([])
       expect(data.archivedItems).toEqual([])
     })
+
+    it('返回的数据是快照副本，修改不影响 store', () => {
+      const store = useTodoStore()
+      store.addTodo('任务1')
+
+      const data = store.exportData()
+      data.items.push({ id: 'fake', text: '入侵', status: 'todo', createdAt: 0 })
+      data.items[0].text = '被修改'
+
+      // store 不受影响
+      expect(store.items.value).toHaveLength(1)
+      expect(store.items.value[0].text).toBe('任务1')
+    })
   })
 })

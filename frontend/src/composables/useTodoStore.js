@@ -110,8 +110,8 @@ export function useTodoStore() {
     return {
       version: 1,
       exportedAt: new Date().toISOString(),
-      items: items.value,
-      archivedItems: archivedItems.value,
+      items: items.value.map((item) => ({ ...item })),
+      archivedItems: archivedItems.value.map((item) => ({ ...item })),
     }
   }
 
