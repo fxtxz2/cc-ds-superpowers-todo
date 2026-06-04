@@ -42,8 +42,9 @@ const inProgressItems = computed(() => props.items.filter((i) => i.status === 'i
 const doneItems = computed(() => props.items.filter((i) => i.status === 'done'))
 
 function handleColumnUpdate(targetStatus, updatedColumnItems) {
-  // Merge: keep items from other columns, replace target column
-  const otherItems = props.items.filter((i) => i.status !== targetStatus)
+  // Deduplicate by id: prefer updatedColumnItems (has correct status after drag)
+  const updatedIds = new Set(updatedColumnItems.map((i) => i.id))
+  const otherItems = props.items.filter((i) => !updatedIds.has(i.id))
   const newItems = [...otherItems, ...updatedColumnItems]
   emit('update:items', newItems)
 }
