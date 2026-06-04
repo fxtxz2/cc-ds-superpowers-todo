@@ -45,6 +45,8 @@ import { ref } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useTodoStore } from '../composables/useTodoStore'
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
 const props = defineProps({
   doneCount: { type: Number, default: 0 },
 })
@@ -85,7 +87,7 @@ function handleExport() {
     URL.revokeObjectURL(url)
     ElMessage.success('导出成功')
   } catch (e) {
-    ElMessage.error(`导出失败：${e.message}`)
+    ElMessage.error(`导出失败：${e?.message ?? e}`)
   }
 }
 
@@ -100,7 +102,7 @@ async function handleFileSelected(event) {
   const file = event.target.files?.[0]
   if (!file) return
 
-  if (file.size > 10 * 1024 * 1024) {
+  if (file.size > MAX_FILE_SIZE) {
     ElMessage.error('文件过大，请选择小于 10MB 的文件')
     return
   }
@@ -132,6 +134,8 @@ async function handleFileSelected(event) {
       // 用户取消确认
     } else if (e.message) {
       ElMessage.error(`导入失败：${e.message}`)
+    } else {
+      ElMessage.error('导入失败：未知错误')
     }
   } finally {
     importing.value = false
