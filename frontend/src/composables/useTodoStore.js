@@ -102,6 +102,10 @@ export function useTodoStore() {
     items.value = items.value.filter((item) => item.status !== STATUSES.DONE)
   }
 
+  function removeArchived(id) {
+    archivedItems.value = archivedItems.value.filter((item) => item.id !== id)
+  }
+
   return {
     items,
     archivedItems,
@@ -110,5 +114,6 @@ export function useTodoStore() {
     updateStatus,
     reorderItems,
     archiveDone,
+    removeArchived,
   }
 }

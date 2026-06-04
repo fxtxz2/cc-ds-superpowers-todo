@@ -7,6 +7,7 @@
       <div v-for="item in items" :key="item.id" class="archived-dialog__item">
         <span class="archived-dialog__text">{{ item.text }}</span>
         <span class="archived-dialog__date">{{ formatDate(item.archivedAt) }}</span>
+        <span class="archived-dialog__delete" @click="$emit('delete-archived', item.id)">✕</span>
       </div>
     </div>
     <template #footer>
@@ -18,6 +19,7 @@
 <script setup>
 import { ref } from 'vue'
 
+defineEmits(['delete-archived'])
 defineProps({
   items: { type: Array, default: () => [] },
 })
@@ -70,5 +72,15 @@ defineExpose({ open })
   color: #909399;
   flex-shrink: 0;
   margin-left: 12px;
+}
+.archived-dialog__delete {
+  color: #F56C6C;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.archived-dialog__delete:hover {
+  color: #e04747;
 }
 </style>

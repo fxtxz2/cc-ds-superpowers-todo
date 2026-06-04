@@ -127,4 +127,24 @@ describe('useTodoStore', () => {
     expect(store.items.value).toHaveLength(2)
     expect(store.archivedItems.value).toHaveLength(0)
   })
+
+  it('removeArchived 按 id 删除归档任务', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.updateStatus(store.items.value[0].id, 'done')
+    store.archiveDone()
+    expect(store.archivedItems.value).toHaveLength(1)
+    const archivedId = store.archivedItems.value[0].id
+    store.removeArchived(archivedId)
+    expect(store.archivedItems.value).toHaveLength(0)
+  })
+
+  it('removeArchived 传入不存在的 id 不影响归档', () => {
+    const store = useTodoStore()
+    store.addTodo('任务1')
+    store.updateStatus(store.items.value[0].id, 'done')
+    store.archiveDone()
+    store.removeArchived('nonexistent-id')
+    expect(store.archivedItems.value).toHaveLength(1)
+  })
 })

@@ -13,7 +13,7 @@
         📦 查看归档 ({{ store.archivedItems.value.length }})
       </el-button>
     </div>
-    <ArchivedDialog ref="archivedDialog" :items="store.archivedItems.value" />
+    <ArchivedDialog ref="archivedDialog" :items="store.archivedItems.value" @delete-archived="handleDeleteArchived" />
   </div>
 </template>
 
@@ -42,6 +42,10 @@ function handleReorder(newItems) {
 
 function handleArchive() {
   store.archiveDone()
+}
+
+function handleDeleteArchived(id) {
+  store.removeArchived(id)
 }
 </script>
 
