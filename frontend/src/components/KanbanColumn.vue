@@ -16,6 +16,7 @@
       </template>
     </draggable>
     <p v-if="items.length === 0" class="kanban-column__empty">暂无任务</p>
+    <slot />
   </div>
 </template>
 
