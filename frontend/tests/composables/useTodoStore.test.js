@@ -147,4 +147,46 @@ describe('useTodoStore', () => {
     store.removeArchived('nonexistent-id')
     expect(store.archivedItems.value).toHaveLength(1)
   })
+
+  describe('exportData', () => {
+    it('返回包含 version、exportedAt、items、archivedItems 的对象', () => {
+      const store = useTodoStore()
+      store.addTodo('任务1')
+      store.addTodo('任务2')
+
+      const data = store.exportData()
+
+      expect(data).toHaveProperty('version', 1)
+      expect(data).toHaveProperty('exportedAt')
+      expect(typeof data.exportedAt).toBe('string')
+      expect(data).toHaveProperty('items')
+      expect(data).toHaveProperty('archivedItems')
+      expect(data.items).toHaveLength(2)
+      expect(data.items[0].text).toBe('任务1')
+      expect(data.items[1].text).toBe('任务2')
+      expect(data.archivedItems).toEqual([])
+    })
+
+    it('导出数据包含归档项', () => {
+      const store = useTodoStore()
+      store.addTodo('待归档')
+      store.updateStatus(store.items.value[0].id, 'done')
+      store.archiveDone()
+
+      const data = store.exportData()
+
+      expect(data.items).toHaveLength(0)
+      expect(data.archivedItems).toHaveLength(1)
+      expect(data.archivedItems[0].text).toBe('待归档')
+    })
+
+    it('空数据时导出空数组', () => {
+      const store = useTodoStore()
+
+      const data = store.exportData()
+
+      expect(data.items).toEqual([])
+      expect(data.archivedItems).toEqual([])
+    })
+  })
 })

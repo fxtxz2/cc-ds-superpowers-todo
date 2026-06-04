@@ -106,6 +106,15 @@ export function useTodoStore() {
     archivedItems.value = archivedItems.value.filter((item) => item.id !== id)
   }
 
+  function exportData() {
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      items: items.value,
+      archivedItems: archivedItems.value,
+    }
+  }
+
   return {
     items,
     archivedItems,
@@ -115,5 +124,6 @@ export function useTodoStore() {
     reorderItems,
     archiveDone,
     removeArchived,
+    exportData,
   }
 }
