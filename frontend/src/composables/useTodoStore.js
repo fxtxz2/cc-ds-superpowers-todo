@@ -106,6 +106,25 @@ export function useTodoStore() {
     archivedItems.value = archivedItems.value.filter((item) => item.id !== id)
   }
 
+  function exportData() {
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      items: items.value.map((item) => ({ ...item })),
+      archivedItems: archivedItems.value.map((item) => ({ ...item })),
+    }
+  }
+
+  function importData(jsonData) {
+    if (!jsonData || typeof jsonData !== 'object' || Array.isArray(jsonData)) {
+      throw new Error('无效的数据格式')
+    }
+    const newItems = Array.isArray(jsonData.items) ? jsonData.items : []
+    const newArchived = Array.isArray(jsonData.archivedItems) ? jsonData.archivedItems : []
+    items.value = newItems.map((item) => ({ ...item }))
+    archivedItems.value = newArchived.map((item) => ({ ...item }))
+  }
+
   return {
     items,
     archivedItems,
@@ -115,5 +134,7 @@ export function useTodoStore() {
     reorderItems,
     archiveDone,
     removeArchived,
+    exportData,
+    importData,
   }
 }

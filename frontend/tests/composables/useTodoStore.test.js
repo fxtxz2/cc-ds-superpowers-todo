@@ -147,4 +147,139 @@ describe('useTodoStore', () => {
     store.removeArchived('nonexistent-id')
     expect(store.archivedItems.value).toHaveLength(1)
   })
+
+  describe('exportData', () => {
+    it('返回包含 version、exportedAt、items、archivedItems 的对象', () => {
+      const store = useTodoStore()
+      store.addTodo('任务1')
+      store.addTodo('任务2')
+
+      const data = store.exportData()
+
+      expect(data).toHaveProperty('version', 1)
+      expect(data).toHaveProperty('exportedAt')
+      expect(typeof data.exportedAt).toBe('string')
+      expect(data).toHaveProperty('items')
+      expect(data).toHaveProperty('archivedItems')
+      expect(data.items).toHaveLength(2)
+      expect(data.items[0].text).toBe('任务1')
+      expect(data.items[1].text).toBe('任务2')
+      expect(data.archivedItems).toEqual([])
+    })
+
+    it('导出数据包含归档项', () => {
+      const store = useTodoStore()
+      store.addTodo('待归档')
+      store.updateStatus(store.items.value[0].id, 'done')
+      store.archiveDone()
+
+      const data = store.exportData()
+
+      expect(data.items).toHaveLength(0)
+      expect(data.archivedItems).toHaveLength(1)
+      expect(data.archivedItems[0].text).toBe('待归档')
+    })
+
+    it('空数据时导出空数组', () => {
+      const store = useTodoStore()
+
+      const data = store.exportData()
+
+      expect(data.items).toEqual([])
+      expect(data.archivedItems).toEqual([])
+    })
+
+    it('返回的数据是快照副本，修改不影响 store', () => {
+      const store = useTodoStore()
+      store.addTodo('任务1')
+
+      const data = store.exportData()
+      data.items.push({ id: 'fake', text: '入侵', status: 'todo', createdAt: 0 })
+      data.items[0].text = '被修改'
+
+      // store 不受影响
+      expect(store.items.value).toHaveLength(1)
+      expect(store.items.value[0].text).toBe('任务1')
+    })
+  })
+
+  describe('importData', () => {
+    it('正确导入数据并覆盖 items 和 archivedItems', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+      expect(store.items.value).toHaveLength(1)
+
+      const jsonData = {
+        version: 1,
+        exportedAt: '2026-06-04T10:00:00.000Z',
+        items: [
+          { id: 'a1', text: '导入任务1', status: 'todo', createdAt: 1000 },
+          { id: 'a2', text: '导入任务2', status: 'in-progress', createdAt: 2000 },
+        ],
+        archivedItems: [
+          { id: 'a3', text: '导入归档', status: 'done', createdAt: 500, archivedAt: 3000 },
+        ],
+      }
+
+      store.importData(jsonData)
+
+      expect(store.items.value).toHaveLength(2)
+      expect(store.items.value[0].text).toBe('导入任务1')
+      expect(store.items.value[1].text).toBe('导入任务2')
+      expect(store.archivedItems.value).toHaveLength(1)
+      expect(store.archivedItems.value[0].text).toBe('导入归档')
+    })
+
+    it('items 不是数组时使用空数组兜底', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+
+      store.importData({ version: 1, exportedAt: '', items: null, archivedItems: null })
+
+      expect(store.items.value).toEqual([])
+      expect(store.archivedItems.value).toEqual([])
+    })
+
+    it('导入空对象时使用空数组兜底', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+
+      store.importData({})
+
+      expect(store.items.value).toEqual([])
+      expect(store.archivedItems.value).toEqual([])
+    })
+
+    it('传入 null 时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData(null)).toThrow('无效的数据格式')
+    })
+
+    it('传入字符串时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData('not an object')).toThrow('无效的数据格式')
+    })
+
+    it('传入数组时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData([])).toThrow('无效的数据格式')
+    })
+
+    it('导入的数据是独立副本，外部修改不影响 store', () => {
+      const store = useTodoStore()
+      const externalItems = [{ id: 'a1', text: '外部任务', status: 'todo', createdAt: 1000 }]
+      store.importData({ version: 1, exportedAt: '', items: externalItems, archivedItems: [] })
+
+      // 修改外部引用
+      externalItems[0].text = '被篡改'
+      externalItems.push({ id: 'a2', text: '注入', status: 'todo', createdAt: 2000 })
+
+      // store 不受影响
+      expect(store.items.value).toHaveLength(1)
+      expect(store.items.value[0].text).toBe('外部任务')
+    })
+  })
 })
