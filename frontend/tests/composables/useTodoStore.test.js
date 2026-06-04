@@ -202,4 +202,64 @@ describe('useTodoStore', () => {
       expect(store.items.value[0].text).toBe('任务1')
     })
   })
+
+  describe('importData', () => {
+    it('正确导入数据并覆盖 items 和 archivedItems', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+      expect(store.items.value).toHaveLength(1)
+
+      const jsonData = {
+        version: 1,
+        exportedAt: '2026-06-04T10:00:00.000Z',
+        items: [
+          { id: 'a1', text: '导入任务1', status: 'todo', createdAt: 1000 },
+          { id: 'a2', text: '导入任务2', status: 'in-progress', createdAt: 2000 },
+        ],
+        archivedItems: [
+          { id: 'a3', text: '导入归档', status: 'done', createdAt: 500, archivedAt: 3000 },
+        ],
+      }
+
+      store.importData(jsonData)
+
+      expect(store.items.value).toHaveLength(2)
+      expect(store.items.value[0].text).toBe('导入任务1')
+      expect(store.items.value[1].text).toBe('导入任务2')
+      expect(store.archivedItems.value).toHaveLength(1)
+      expect(store.archivedItems.value[0].text).toBe('导入归档')
+    })
+
+    it('items 不是数组时使用空数组兜底', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+
+      store.importData({ version: 1, exportedAt: '', items: null, archivedItems: null })
+
+      expect(store.items.value).toEqual([])
+      expect(store.archivedItems.value).toEqual([])
+    })
+
+    it('导入空对象时使用空数组兜底', () => {
+      const store = useTodoStore()
+      store.addTodo('旧数据')
+
+      store.importData({})
+
+      expect(store.items.value).toEqual([])
+      expect(store.archivedItems.value).toEqual([])
+    })
+
+    it('传入 null 时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData(null)).toThrow('无效的数据格式')
+    })
+
+    it('传入字符串时抛出错误', () => {
+      const store = useTodoStore()
+
+      expect(() => store.importData('not an object')).toThrow('无效的数据格式')
+    })
+  })
 })

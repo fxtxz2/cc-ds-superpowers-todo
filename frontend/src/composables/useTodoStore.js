@@ -115,6 +115,16 @@ export function useTodoStore() {
     }
   }
 
+  function importData(jsonData) {
+    if (!jsonData || typeof jsonData !== 'object') {
+      throw new Error('无效的数据格式')
+    }
+    const newItems = Array.isArray(jsonData.items) ? jsonData.items : []
+    const newArchived = Array.isArray(jsonData.archivedItems) ? jsonData.archivedItems : []
+    items.value = newItems
+    archivedItems.value = newArchived
+  }
+
   return {
     items,
     archivedItems,
@@ -125,5 +135,6 @@ export function useTodoStore() {
     archiveDone,
     removeArchived,
     exportData,
+    importData,
   }
 }
