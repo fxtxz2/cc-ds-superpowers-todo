@@ -8,16 +8,25 @@
       @delete="handleDelete"
       @archive="handleArchive"
     />
+    <div class="app__actions">
+      <el-button text @click="archivedDialog.open()">
+        📦 查看归档 ({{ store.archivedItems.value.length }})
+      </el-button>
+    </div>
+    <ArchivedDialog ref="archivedDialog" :items="store.archivedItems.value" />
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import TodoHeader from './components/TodoHeader.vue'
 import TodoInput from './components/TodoInput.vue'
 import KanbanBoard from './components/KanbanBoard.vue'
+import ArchivedDialog from './components/ArchivedDialog.vue'
 import { useTodoStore } from './composables/useTodoStore'
 
 const store = useTodoStore()
+const archivedDialog = ref(null)
 
 function handleAdd(text) {
   store.addTodo(text)
