@@ -5,15 +5,21 @@ export const STATUSES = { TODO: 'todo', IN_PROGRESS: 'in-progress', DONE: 'done'
 const STORAGE_KEY = 'todo-items'
 const ARCHIVE_KEY = 'todo-archived'
 
-function generateId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
+function isLocalStorageAvailable() {
+  try {
+    const testKey = '__todo_test__'
+    localStorage.setItem(testKey, '1')
+    localStorage.removeItem(testKey)
+    return true
+  } catch {
+    return false
   }
-  // Fallback: timestamp + random string
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+const storageAvailable = isLocalStorageAvailable()
+
 function loadFromStorage(key) {
+  if (!storageAvailable) return []
   try {
     const raw = localStorage.getItem(key)
     return raw ? JSON.parse(raw) : []
@@ -23,11 +29,23 @@ function loadFromStorage(key) {
 }
 
 function saveToStorage(key, data) {
+  if (!storageAvailable) {
+    console.warn('[useTodoStore] localStorage unavailable, data not persisted')
+    return
+  }
   try {
     localStorage.setItem(key, JSON.stringify(data))
   } catch (e) {
     console.warn('[useTodoStore] Failed to save to localStorage:', e.message)
   }
+}
+
+function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback: timestamp + random string
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
 const items = ref([])

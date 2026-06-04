@@ -42,16 +42,25 @@ const iconMap = {
 
 const icon = computed(() => props.icon || iconMap[props.status] || '')
 
-// vuedraggable needs two-way binding, use computed proxy
-const localItems = computed({
-  get: () => props.items,
-  set: (val) => emit('update:items', val),
-})
+// Use a plain computed for vuedraggable list binding (read-only from props)
+// vuedraggable mutates this in-place, which is fine for display but we need
+// to capture the changes via @change events
+const localItems = computed(() => props.items)
 
 function handleChange(event) {
-  if (event.added) {
-    const item = event.added.element
-    emit('update:items', [{ ...item, status: props.status }])
+  if (event.moved) {
+    // Within-column reorder: emit the full reordered list
+    // After in-place mutation, localItems.value reflects the new order
+    const reordered = [...localItems.value]
+    emit('update:items', reordered)
+  } else if (event.added) {
+    // Cross-column drag: the new item now has the wrong status in the array
+    // Reconstruct the full column list with the added item's status corrected
+    const updated = localItems.value.map(item => ({
+      ...item,
+      status: props.status,
+    }))
+    emit('update:items', updated)
   }
 }
 </script>
